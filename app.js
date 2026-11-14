@@ -541,7 +541,7 @@ function renderGroup(){
   }
   if(!session){
     root.innerHTML='<div class="card"><h2>לימוד בקבוצה</h2>'+
-      '<p>כדי ליצור קבוצה או להצטרף לאחת, מתחברים קודם - אימייל בלבד, בלי סיסמה.</p>'+
+      '<p>כדי ליצור קבוצה או להצטרף לאחת, מתחברים קודם עם חשבון Google.</p>'+
       '<div class="row"><button class="btn-volt" id="goSettings">להתחברות</button></div></div>';
     $("goSettings").onclick=function(){ document.querySelector('[data-view="view-settings"]').click(); };
     return;
@@ -569,8 +569,8 @@ function renderGroup(){
 function renderGroupMembers(root, rows){
   var byUser={};
   rows.forEach(function(row){
-    if(!byUser[row.user_id]) byUser[row.user_id]={name:row.display_name, share:row.share_progress, joined:row.joined_at, dates:{}};
-    if(row.done_on) byUser[row.user_id].dates[row.done_on]=1;
+    if(!byUser[row.user_id]) byUser[row.user_id]={name:row.display_name, share:row.share_progress, joined:row.joined_at, dates:{}, chapters:0};
+    if(row.done_on){ byUser[row.user_id].dates[row.done_on]=1; byUser[row.user_id].chapters++; }
   });
   var me=session.user.id, myShare=byUser[me]&&byUser[me].share;
   var invite=location.origin+location.pathname+"#join=";
@@ -583,13 +583,13 @@ function renderGroupMembers(root, rows){
   if(!ids.length) html+='<p>עוד אין חברים.</p>';
   ids.forEach(function(uid){
     var m=byUser[uid], dates=m.dates;
-    var dc=Object.keys(dates).length, st=calcStreak(dates);
+    var dc=m.chapters, st=calcStreak(dates);
     var todayMark = dates[todayStr()] ? " · סימן/ה היום ✓" : "";
     var nums = m.share || uid===me
       ? '<div class="nums"><b>'+dc+'</b><span>פרקים</span><b>'+st+'</b><span>רצף ימים</span></div>'
       : '<span class="private-tag">לא משתף/ת</span>';
     html+='<div class="member"><div class="avatar">'+esc((m.name||"?").charAt(0))+'</div>'+
-      '<div class="mi"><b>'+esc(m.name)+(uid===me?" (אני)":"")+'</b><span>'+(m.share||uid===me?"משתף/ת"+todayMark:"ההתקדמות פרטית")+'</span></div>'+nums+'</div>';
+      '<div class="mi"><b>'+esc(m.name)+(uid===me?" (אני)":"")+'</b><span>'+(m.share?"משתף/ת"+todayMark:"ההתקדמות פרטית")+'</span></div>'+nums+'</div>';
   });
   html+='</div><div class="hr"></div><h3>הזמנת חברים</h3>'+
     '<p>שולחים את הקישור - מי שפותח ומתחבר מצטרף לקבוצה.</p>'+
@@ -615,7 +615,7 @@ function renderGroupMembers(root, rows){
         function(){ toast("הקישור הועתק"); },
         function(){ toast("מסומן למעלה - סמנו והעתיקו ידנית"); });
     };
-    $("waBtn").href="https://wa.me/?text="+encodeURIComponent("מצטרפים ללמוד תנ״ך ביחד! נכנסים לקישור, מתחברים עם אימייל, וזהו: "+link);
+    $("waBtn").href="https://wa.me/?text="+encodeURIComponent("מצטרפים ללמוד תנ״ך ביחד! נכנסים לקישור, מתחברים עם Google, וזהו: "+link);
   });
   $("leaveBtn").onclick=function(){
     if(!confirm("לעזוב את הקבוצה? ההתקדמות האישית נשמרת.")) return;
@@ -649,12 +649,14 @@ function joinGroup(code){
 }
 
 /* קישור הצטרפות שהגיע בכתובת (#join=CODE) */
-(function handleJoinLink(){
+function handleJoinLink(){
   var m=(location.hash||"").match(/join=([A-Za-z0-9]{4,8})/);
   if(!m) return;
   history.replaceState(null,"",location.pathname);
   localStorage.setItem("shnaim-pending-join", m[1]);
-})();
+}
+handleJoinLink();
+window.addEventListener("hashchange",function(){ handleJoinLink(); consumePendingJoin(); });
 function consumePendingJoin(){
   var code=localStorage.getItem("shnaim-pending-join");
   if(code && session){ localStorage.removeItem("shnaim-pending-join"); joinGroup(code); }
