@@ -300,7 +300,8 @@ function renderSettings(){
       '<label class="f">השם שיוצג לחברי הקבוצה</label>'+
       '<input type="text" id="dispName" maxlength="30" value="'+esc(profile&&profile.display_name||"")+'" placeholder="השם שלי">'+
       '<div class="row"><button class="btn-volt" id="saveName">שמירת שם</button>'+
-      '<button class="btn-ghost" id="logoutBtn">התנתקות</button></div></div>';
+      '<button class="btn-ghost" id="logoutBtn">התנתקות</button></div>'+
+      (countIn(loadState(KEY))>0 ? '<div class="hr"></div><p>יש במכשיר סימונים ללא חשבון. הם נשארים נפרדים ולא הועלו לחשבון הזה.</p><button class="btn-ghost" id="importLocalBtn">ייבוא סימוני המכשיר לחשבון הזה</button>' : '')+'</div>';
   } else {
     accHtml='<div class="card"><h2>התחברות</h2>'+
       '<p>התחברות בלחיצה אחת עם חשבון Google. אחרי ההתחברות המעקב מסונכרן בין המכשירים שלך ואפשר להצטרף לקבוצה.</p>'+
@@ -340,6 +341,11 @@ function renderSettings(){
   if(cloud && session){
     $("saveName").onclick=saveDisplayName;
     $("logoutBtn").onclick=doLogout;
+    if($("importLocalBtn")) $("importLocalBtn").onclick=function(){
+      if(!confirm("לצרף את הסימונים ללא חשבון שבמכשיר הזה להתקדמות של "+session.user.email+"? הסימונים הקיימים לא יימחקו.")) return;
+      state=unionStates(state,loadState(KEY)); save(); refresh();
+      syncNow().then(function(){toast("הסימונים נוספו לחשבון. המקור במכשיר נשמר.");});
+    };
   }
   $("remSave").onclick=function(){
     var t=$("remTime").value||"20:00";
@@ -507,15 +513,8 @@ function onLoggedIn(){
       });
     }
   });
-  /* טוענים את המעין הפרטי של המשתמש, ומייבאים את הסימונים האנונימיים של המכשיר
-     פעם אחת בלבד לכל חשבון - כך מחיקות לא קמות לתחייה ואין כפילות בכניסות חוזרות */
-  var migFlag="shnaim-layom-migrated:"+session.user.id;
-  var merged=loadState(activeKey());
-  if(!localStorage.getItem(migFlag) && countIn(loadState(KEY))>0){
-    merged=unionStates(merged, loadState(KEY));
-    localStorage.setItem(migFlag,"1");
-  }
-  state=merged; save(); refresh();
+  /* סימונים מקומיים אנונימיים נשארים נפרדים עד לבחירה מפורשת בייבוא. */
+  state=loadState(activeKey()); save(); refresh();
   syncNow();
   loadMyGroup();
 }
