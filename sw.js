@@ -1,4 +1,4 @@
-var CACHE = "shnaim-v3";
+var CACHE = "shnaim-v4";
 var ASSETS = ["./", "index.html", "styles.css", "app.js", "config.js", "manifest.webmanifest",
   ];
 self.addEventListener("install", function(e){
@@ -23,6 +23,11 @@ self.addEventListener("notificationclick", function(e){
 });
 self.addEventListener("fetch", function(e){
   if (e.request.method !== "GET") return;
+  var url = new URL(e.request.url);
+  /* Only static app assets may enter the offline cache. Never cache account/API data. */
+  if (url.origin !== self.location.origin) return;
+  var name = url.pathname.split("/").pop();
+  if (!["", "index.html", "styles.css", "app.js", "config.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon.svg", "privacy.html"].includes(name)) return;
   e.respondWith(
     fetch(e.request).then(function(res){
       var copy = res.clone();
