@@ -1,5 +1,6 @@
 name: Install app PNG icons
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.github/workflows/install-icons.yml'
