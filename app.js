@@ -304,7 +304,7 @@ function renderSettings(){
   } else {
     accHtml='<div class="card"><h2>התחברות</h2>'+
       '<p>התחברות בלחיצה אחת עם חשבון Google. אחרי ההתחברות המעקב מסונכרן בין המכשירים שלך ואפשר להצטרף לקבוצה.</p>'+
-      '<div class="row"><button class="btn-volt" id="googleBtn">התחברות עם Google</button></div>'+
+      '<div class="row"><a class="btn-volt" id="googleBtn" href="'+esc(CFG.SUPABASE_URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(location.origin+location.pathname))+'" style="display:inline-block;text-align:center;text-decoration:none">התחברות עם Google</a></div>'+
       (CFG.EMAIL_AUTH===true?
         '<div class="hr"></div>'+
         '<label class="f">אימייל</label><input type="email" id="emailIn" dir="ltr" placeholder="me@example.com">'+
@@ -412,7 +412,13 @@ function loadSupabase(){
     var s=document.createElement("script");
     s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js";
     s.onload=function(){ resolve(); };
-    s.onerror=function(){ reject(new Error("cdn")); };
+    s.onerror=function(){
+      var fallback=document.createElement("script");
+      fallback.src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js";
+      fallback.onload=resolve;
+      fallback.onerror=function(){reject(new Error("cdn"));};
+      document.head.appendChild(fallback);
+    };
     document.head.appendChild(s);
   });
 }
@@ -430,14 +436,14 @@ function initCloud(){
         renderSettings(); renderGroup();
       }
       setModeBadge();
-      if(sess){ onLoggedIn(); } else { myGroup=null; profile=null; }
+      if(sess){ setTimeout(function(){ if(session && session.user.id===sess.user.id) onLoggedIn(); },0); } else { myGroup=null; profile=null; }
     });
     return sb.auth.getSession();
   }).then(function(res){
     if(res && res.data && res.data.session){ session=res.data.session; setModeBadge(); onLoggedIn(); }
   }).catch(function(){
     setModeBadge();
-    toast("אין חיבור לשרת כרגע - עובדים מקומית");
+    toast("רכיב החיבור לא נטען. אפשר לפתוח את הכניסה ל־Google ולרענן אחרי החזרה.");
   });
 }
 
@@ -452,12 +458,10 @@ function setModeBadge(){
 }
 
 function doLoginGoogle(){
-  $("googleBtn").disabled=true; $("googleBtn").textContent="מעביר ל־Google...";
-  sb.auth.signInWithOAuth({provider:"google", options:{redirectTo:location.origin+location.pathname}}).then(function(r){
-    $("googleBtn").disabled=false; $("googleBtn").textContent="התחברות עם Google";
-    if(r.error) toast("ההתחברות עם Google נכשלה: "+r.error.message);
-  });
+  var target=CFG.SUPABASE_URL+"/auth/v1/authorize?provider=google&redirect_to="+encodeURIComponent(location.origin+location.pathname);
+  location.assign(target);
 }
+
 function doLogin(){
   var em=$("emailIn").value.trim();
   if(!em || em.indexOf("@")<0){ toast("כתובת אימייל לא תקינה"); return; }
@@ -723,6 +727,15 @@ scheduleReminder();
 if("serviceWorker" in navigator && location.protocol==="https:"){
   navigator.serviceWorker.register("sw.js").catch(noop);
 }
+(function(){
+  var q=new URLSearchParams(location.hash.slice(1));
+  if(q.get("error")||q.get("error_description")){
+    var msg=q.get("error_description")||q.get("error");
+    toast("הכניסה לא הושלמה: "+msg);
+    history.replaceState(null,"",location.pathname);
+    document.querySelector('[data-view="view-settings"]').click();
+  }
+})();
 initCloud();
 /* אחרי התחברות - להשלים הצטרפות מקישור */
 var _onLoggedIn=onLoggedIn;
