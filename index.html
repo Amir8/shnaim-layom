@@ -39,6 +39,17 @@
     </div>
   </div>
 
+  <div class="card" id="sitesCard" style="margin:14px">
+    <div class="row"><a class="btn-volt" href="https://www.929.org.il/" target="_blank" rel="noopener noreferrer">929 ↗</a><button class="btn-ghost" id="siteToggle">＋ הוספת אתר</button></div>
+    <div id="siteLinks"></div>
+    <div id="siteForm" hidden>
+      <label class="f" for="siteTitle">שם האתר</label><input id="siteTitle" maxlength="70" placeholder="שם האתר">
+      <label class="f" for="siteUrl">כתובת האתר</label><input id="siteUrl" type="url" dir="ltr" placeholder="https://...">
+      <div class="row"><button class="btn-volt" id="siteAdd">שמירת הקישור</button></div><p class="note" id="siteStatus" aria-live="polite"></p>
+    </div>
+    <p class="note" style="margin-bottom:0">הקישורים פרטיים במכשיר הזה, לפי החשבון. אינם מסתנכרנים.</p>
+  </div>
+
   <div class="next" id="nextWrap" style="display:none">
     <div>הבא בתור: <span id="nextName"></span><small>בסדר הספרים, בלי לחץ של לוח זמנים</small></div>
     <a id="next929" class="btn-volt" target="_blank" rel="noopener">פתח ב־929</a>
@@ -69,6 +80,6 @@
 <input type="file" id="imp" accept="application/json" style="display:none">
 
 <script src="config.js"></script>
-<script src="app.js?v=login3"></script>
+<script src="app.js?v=simple1"></script>
 </body>
 </html>
