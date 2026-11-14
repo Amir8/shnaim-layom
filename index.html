@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>שניים ליום · לומדים תנ״ך ביחד</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <h1>שניים ליום</h1>
+  <div class="sub">מעקב אישי אחרי קריאת התנ״ך · וביחד עם הקבוצה</div>
+  <div id="modeBadge" class="badge" hidden></div>
+</header>
+
+<!-- ============ TRACKER VIEW ============ -->
+<section id="view-track" class="view">
+  <div class="summary">
+    <div class="ring">
+      <svg width="110" height="110">
+        <circle cx="55" cy="55" r="47" fill="none" stroke="#222226" stroke-width="9"/>
+        <circle id="ringfill" cx="55" cy="55" r="47" fill="none" stroke="#d8ff3d" stroke-width="9"
+          stroke-linecap="round" stroke-dasharray="295.3" stroke-dashoffset="295.3"/>
+      </svg>
+      <div class="pct"><b id="pct">0%</b><span id="of929">0 מתוך 742</span></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="stToday">0</b><span>פרקים היום</span></div>
+      <div class="stat"><b id="stStreak">0</b><span>ימים ברצף</span></div>
+      <div class="stat"><b id="stLeft">742</b><span>פרקים נותרו</span></div>
+      <div class="stat"><b id="stBooks">0/34</b><span>יחידות הושלמו</span></div>
+    </div>
+  </div>
+
+  <div class="next" id="nextWrap" style="display:none">
+    <div>הבא בתור: <span id="nextName"></span><small>בסדר הספרים, בלי לחץ של לוח זמנים</small></div>
+    <a id="next929" class="btn-volt" target="_blank" rel="noopener">פתח ב־929</a>
+  </div>
+
+  <main id="books"></main>
+
+  <div class="note" id="storageNote"></div>
+</section>
+
+<!-- ============ GROUP VIEW ============ -->
+<section id="view-group" class="view" hidden>
+  <div id="groupRoot"></div>
+</section>
+
+<!-- ============ SETTINGS VIEW ============ -->
+<section id="view-settings" class="view" hidden>
+  <div id="settingsRoot"></div>
+</section>
+
+<nav id="tabs">
+  <button data-view="view-track" class="tab active">המעקב שלי</button>
+  <button data-view="view-group" class="tab">הקבוצה</button>
+  <button data-view="view-settings" class="tab">הגדרות</button>
+</nav>
+
+<div id="toast" hidden></div>
+<input type="file" id="imp" accept="application/json" style="display:none">
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
