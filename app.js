@@ -386,7 +386,13 @@ function initCloud(){
   loadSupabase().then(function(){
     sb=window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
     sb.auth.onAuthStateChange(function(ev,sess){
+      var oldId=session&&session.user.id, newId=sess&&sess.user.id;
       session=sess;
+      if(oldId!==newId){
+        myGroup=null; profile=null; state=loadState(activeKey()); refresh();
+        $("groupRoot").innerHTML=""; $("settingsRoot").innerHTML="";
+        renderSettings(); renderGroup();
+      }
       setModeBadge();
       if(sess){ onLoggedIn(); } else { myGroup=null; profile=null; }
     });
@@ -434,7 +440,7 @@ function doLogin(){
 function doLogout(){
   sb.auth.signOut().then(function(){
     session=null; profile=null; myGroup=null;
-    state=loadState(KEY); refresh(); /* חזרה למעקב האנונימי בלבד - נתוני החשבון נשארים במעין הפרטי */
+    state=loadState(KEY); refresh(); $("groupRoot").innerHTML=""; /* חזרה למעקב האנונימי בלבד - נתוני החשבון נשארים במעין הפרטי */
     setModeBadge(); renderSettings(); toast("התנתקת");
   });
 }
@@ -449,13 +455,15 @@ function saveDisplayName(){
 }
 
 function onLoggedIn(){
+  var owner=session.user.id;
   sb.from("profiles").select("*").eq("id",session.user.id).maybeSingle().then(function(r){
+    if(!session || session.user.id!==owner) return;
     profile=r.data;
     if(!profile){
       var suggested=(session.user.user_metadata&&session.user.user_metadata.full_name)||(session.user.email||"").split("@")[0];
       var name=suggested;
       sb.from("profiles").insert({id:session.user.id, display_name:name}).then(function(){
-        profile={id:session.user.id, display_name:name};
+        if(session && session.user.id===owner) profile={id:owner, display_name:name};
       });
     }
   });
@@ -487,11 +495,12 @@ function syncChapter(book,ch,dateStr){
    אם שלב נכשל (אופליין) השרשרת נעצרת והמצב המקומי נשמר לסנכרון הבא. */
 function flushDeletes(){
   if(!sb || !session) return Promise.resolve();
+  var owner=session.user.id;
   var l=getPendingDel(); if(!l.length) return Promise.resolve();
   return Promise.all(l.map(function(x){
     return sb.from("progress").delete().match({user_id:session.user.id, book:x[0], chapter:+x[1]})
       .then(function(r){ if(r.error) throw r.error; });
-  })).then(function(){ setPendingDel([]); });
+  })).then(function(){ if(session && session.user.id===owner) setPendingDel([]); });
 }
 function pushAll(){
   if(!sb || !session) return Promise.resolve();
@@ -501,8 +510,10 @@ function pushAll(){
   return sb.from("progress").upsert(rows).then(function(r){ if(r.error) throw r.error; });
 }
 function pullReplace(){
+  var owner=session&&session.user.id;
   return sb.from("progress").select("book,chapter,done_on").then(function(r){
     if(r.error) throw r.error;
+    if(!session || session.user.id!==owner) return;
     var s={};
     (r.data||[]).forEach(function(row){
       if(!s[row.book]) s[row.book]={};
@@ -513,7 +524,8 @@ function pullReplace(){
 }
 function syncNow(){
   if(!sb || !session) return Promise.resolve();
-  return flushDeletes().then(pushAll).then(pullReplace).catch(function(){ /* אופליין - ננסה בכניסה הבאה */ });
+  var owner=session.user.id;
+  return flushDeletes().then(function(){ if(!session || session.user.id!==owner) throw new Error("account_changed"); return pushAll(); }).then(function(){ if(!session || session.user.id!==owner) throw new Error("account_changed"); return pullReplace(); }).catch(function(){ /* אופליין - ננסה בכניסה הבאה */ });
 }
 
 /* ================= קבוצה ================= */
@@ -524,8 +536,10 @@ function makeCode(){
 }
 function loadMyGroup(){
   if(!sb || !session) return;
+  var owner=session.user.id;
   sb.from("group_members").select("group_id, groups(name)").eq("user_id",session.user.id).limit(1).maybeSingle()
     .then(function(r){
+      if(!session || session.user.id!==owner) return;
       myGroup = r.data ? {id:r.data.group_id, name:(r.data.groups&&r.data.groups.name)||"הקבוצה שלי"} : null;
     });
 }
@@ -561,7 +575,9 @@ function renderGroup(){
     return;
   }
   root.innerHTML='<div class="card"><h2 id="gName">'+esc(myGroup.name)+'</h2><p>טוען חברים...</p></div>';
+  var requestedUser=session.user.id, requestedGroup=myGroup.id;
   sb.rpc("get_group_progress",{g:myGroup.id}).then(function(r){
+    if(!session || session.user.id!==requestedUser || !myGroup || myGroup.id!==requestedGroup) return;
     if(r.error){ root.innerHTML='<div class="card"><h2>'+esc(myGroup.name)+'</h2><p>שגיאה בטעינה: '+esc(r.error.message)+'</p></div>'; return; }
     renderGroupMembers(root, r.data||[]);
   });
@@ -607,7 +623,7 @@ function renderGroupMembers(root, rows){
     });
   };
   sb.from("groups").select("invite_code").eq("id",myGroup.id).single().then(function(r){
-    if(r.error||!r.data) return;
+    if(r.error||!r.data || !session || session.user.id!==me) return;
     var link=invite+r.data.invite_code;
     $("invLink").textContent=link;
     $("copyBtn").onclick=function(){
