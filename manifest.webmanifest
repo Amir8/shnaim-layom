@@ -1,0 +1,11 @@
+{
+  "name": "שניים ליום · מעקב תנ״ך",
+  "short_name": "שניים ליום",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b0b0d",
+  "theme_color": "#0b0b0d",
+  "icons": []
+}
