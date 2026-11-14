@@ -109,7 +109,7 @@ SECTIONS.forEach(function(sec){
         var cell=document.createElement("button"); cell.className="cell"; cell.dataset.ch=c;
         cell.textContent=heb(c);
         cell.setAttribute("aria-label",name+" פרק "+heb(c));
-        cell.onclick=function(){ openChapter(name,c); };
+        cell.onclick=function(){ toggleChapter(name,c); };
         grid.appendChild(cell);
       })(c);
     }
@@ -118,40 +118,17 @@ SECTIONS.forEach(function(sec){
 });
 
 
-/* Private, device-local chapter resources. Never shared with groups. */
-var chapterDialog=null;
-function closeChapter(){ if(chapterDialog){ chapterDialog.remove(); chapterDialog=null; } }
-function chapterLinksKey(){ return activeKey()+"|resources"; }
-function getChapterLinks(){ try{return JSON.parse(localStorage.getItem(chapterLinksKey())||"{}")||{};}catch(e){return {};} }
-function openChapter(book,ch){
- closeChapter();
- var owner=session&&session.user.id, id=book+"|"+ch;
- var source="https://www.929.org.il/page/"+SEQ[id];
- var links=getChapterLinks(), list=Array.isArray(links[id])?links[id]:[];
- chapterDialog=document.createElement("dialog"); chapterDialog.className="chapter-dialog";
- var done=!!(state[book]&&state[book][ch]);
- chapterDialog.innerHTML='<div class="chapter-top"><span>כרטיס פרק</span><button id="chapterClose" aria-label="סגירת כרטיס">×</button></div>'+
- '<h2>'+esc(book)+' '+heb(ch)+'</h2><p class="note">פתיחת הפרק אינה מסמנת שהושלם.</p>'+
- '<a class="btn-volt chapter-source" href="'+source+'" target="_blank" rel="noopener noreferrer">קריאת הפרק ב־929 ↗</a>'+
- '<h3>האזנה ומקורות ב־929</h3><a class="btn-ghost chapter-source" href="'+source+'" target="_blank" rel="noopener noreferrer">פתיחת עמוד הפרק לשמיעה ↗</a>'+
- '<p class="note">ההאזנה נפתחת באתר 929, לא בנגן פנימי. תקציר ושיעור הרב בני לאו לפי הזמינות בעמוד המקור.</p>'+
- '<h3>הקישורים שלי לפרק</h3><div id="chapterLinks"></div>'+
- '<p class="note">פרטיים במכשיר הזה, לפי החשבון. אינם משותפים לקבוצה ואינם מסתנכרנים.</p>'+
- '<label class="f" for="resourceTitle">שם הקישור</label><input id="resourceTitle" maxlength="70" placeholder="למשל: שיעור נוסף">'+
- '<label class="f" for="resourceUrl">כתובת הקישור</label><input id="resourceUrl" type="url" dir="ltr" placeholder="https://...">'+
- '<div class="row"><button class="btn-ghost" id="resourceAdd">＋ הוספת קישור משלי</button></div><p class="note" id="resourceStatus" aria-live="polite"></p>'+
- '<div class="hr"></div><button class="'+(done?'btn-ghost':'btn-volt')+' chapter-source" id="chapterDone">'+(done?'ביטול סימון ההשלמה':'✓ סימון הפרק כהושלם')+'</button>';
- document.body.appendChild(chapterDialog);
- function validUrl(v){try{var u=new URL(v);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:null;}catch(e){return null;}}
- function saveLinks(){links[id]=list;try{localStorage.setItem(chapterLinksKey(),JSON.stringify(links));return true;}catch(e){$("resourceStatus").textContent="לא נשמר: האחסון במכשיר אינו זמין";return false;}}
- function renderLinks(){var root=$("chapterLinks");root.innerHTML="";list.forEach(function(x,i){var u=validUrl(x.url);if(!u)return;var row=document.createElement("div");row.className="resource-row";var a=document.createElement("a");a.href=u;a.target="_blank";a.rel="noopener noreferrer";a.textContent=x.title||u;var b=document.createElement("button");b.className="btn-ghost";b.textContent="מחיקה";b.setAttribute("aria-label","מחיקת "+(x.title||"קישור"));b.onclick=function(){list.splice(i,1);if(saveLinks())renderLinks();};row.append(a,b);root.appendChild(row);});}
- renderLinks();
- $("chapterClose").onclick=closeChapter;
- chapterDialog.addEventListener("cancel",closeChapter);
- $("resourceAdd").onclick=function(){var u=validUrl($("resourceUrl").value.trim()),t=$("resourceTitle").value.trim();if(!u||!t){$("resourceStatus").textContent="צריך שם וכתובת מלאה שמתחילה ב־https:// או http://";return;}if(list.length>=30){$("resourceStatus").textContent="אפשר עד 30 קישורים לפרק";return;}list.push({title:t,url:u});if(saveLinks()){renderLinks();$("resourceTitle").value="";$("resourceUrl").value="";$("resourceStatus").textContent="הקישור נשמר במכשיר";}};
- $("chapterDone").onclick=function(){if((session&&session.user.id)!==owner){closeChapter();return;}toggleChapter(book,ch);closeChapter();};
- chapterDialog.showModal();
+/* General site links, private to this device/account. Older chapter links remain stored untouched. */
+function closeChapter(){}
+function siteLinksKey(){return activeKey()+"|site-resources";}
+function validSiteUrl(v){try{var u=new URL(v);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:null;}catch(e){return null;}}
+function renderSites(){
+ var root=$("siteLinks"),list=[];try{list=JSON.parse(localStorage.getItem(siteLinksKey())||"[]");}catch(e){}if(!Array.isArray(list))list=[];
+ root.innerHTML="";
+ list.forEach(function(x,i){var u=validSiteUrl(x.url);if(!u)return;var row=document.createElement("div");row.className="resource-row";var a=document.createElement("a");a.href=u;a.target="_blank";a.rel="noopener noreferrer";a.textContent=x.title||u;var del=document.createElement("button");del.className="btn-ghost";del.textContent="מחיקה";del.onclick=function(){list.splice(i,1);localStorage.setItem(siteLinksKey(),JSON.stringify(list));renderSites();};row.append(a,del);root.appendChild(row);});
+ $("siteAdd").onclick=function(){var u=validSiteUrl($("siteUrl").value.trim()),t=$("siteTitle").value.trim();if(!u||!t){$("siteStatus").textContent="צריך שם וכתובת מלאה של האתר";return;}if(list.length>=30){$("siteStatus").textContent="אפשר לשמור עד 30 אתרים";return;}list.push({title:t,url:u});try{localStorage.setItem(siteLinksKey(),JSON.stringify(list));renderSites();$("siteTitle").value="";$("siteUrl").value="";$("siteForm").hidden=true;toast("הקישור נשמר במכשיר");}catch(e){$("siteStatus").textContent="לא נשמר: האחסון במכשיר אינו זמין";}};
 }
+$("siteToggle").onclick=function(){$("siteForm").hidden=!$("siteForm").hidden;};
 
 function toggleChapter(name,c){
   var wasDone = !!(state[name] && state[name][c]);
@@ -168,6 +145,7 @@ function toggleChapter(name,c){
 
 var nextBook=null;
 function refresh(){
+  renderSites();
   var today=todayStr(), done=doneCount(), todayN=0, booksDone=0;
   var ds=allDates();
   if(ds[today]){ for(var b in state) for(var c in state[b]) if(state[b][c]===today) todayN++; }
