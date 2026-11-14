@@ -14,7 +14,7 @@ self.addEventListener("activate", function(e){
 self.addEventListener("push", function(e){
   var d={}; try{ d=e.data?e.data.json():{}; }catch(x){}
   e.waitUntil(self.registration.showNotification(d.title||"שניים ליום",{
-    body:d.body||"זמן לפרק היומי", icon:"icons/icon-192.png", dir:"rtl", lang:"he"
+    body:d.body||"זמן לפרק היומי", icon:"icons/icon.svg", dir:"rtl", lang:"he"
   }));
 });
 self.addEventListener("notificationclick", function(e){
