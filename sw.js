@@ -1,4 +1,4 @@
-var CACHE = "shnaim-v2";
+var CACHE = "shnaim-v3";
 var ASSETS = ["./", "index.html", "styles.css", "app.js", "config.js", "manifest.webmanifest",
   ];
 self.addEventListener("install", function(e){
@@ -14,7 +14,7 @@ self.addEventListener("activate", function(e){
 self.addEventListener("push", function(e){
   var d={}; try{ d=e.data?e.data.json():{}; }catch(x){}
   e.waitUntil(self.registration.showNotification(d.title||"שניים ליום",{
-    body:d.body||"זמן לפרק היומי", icon:"icons/icon.svg", dir:"rtl", lang:"he"
+    body:d.body||"זמן לפרק היומי", icon:"icons/icon-192.png", dir:"rtl", lang:"he"
   }));
 });
 self.addEventListener("notificationclick", function(e){
