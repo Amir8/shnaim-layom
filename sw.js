@@ -1,4 +1,4 @@
-var CACHE = "shnaim-v1";
+var CACHE = "shnaim-v2";
 var ASSETS = ["./", "index.html", "styles.css", "app.js", "config.js", "manifest.webmanifest",
   ];
 self.addEventListener("install", function(e){
