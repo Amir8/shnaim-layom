@@ -180,6 +180,8 @@ function refresh(){
     $("nextWrap").style.display="flex";
     $("nextName").textContent=next[0]+" "+heb(next[1]);
     $("next929").href="https://www.929.org.il/page/"+SEQ[next[0]+"|"+next[1]];
+    var gl=(window.YGOLAN||{})[next[0]+"|"+next[1]]; var gn=$("nextGolan");
+    if(gn){ if(gl){ gn.href=gl; gn.style.display="inline-block"; } else gn.style.display="none"; }
   } else $("nextWrap").style.display="none";
 }
 
@@ -436,6 +438,7 @@ function setModeBadge(){
   if(!CLOUD_MODE){ b.textContent="מצב מקומי · נשמר במכשיר"; b.className="badge"; }
   else if(session){ b.textContent="מסונכרן לחשבון"; b.className="badge cloud"; }
   else { b.textContent="לא מחובר · נשמר במכשיר"; b.className="badge"; }
+  var lb=$("loginBanner"); if(lb) lb.hidden=!(CLOUD_MODE && !session);
   $("storageNote").textContent = CLOUD_MODE
     ? "הסימונים נשמרים אוטומטית במכשיר, וכשאת/ה מחובר/ת הם מסונכרנים גם לחשבון שלך ועוברים איתך בין מכשירים. אף אחד לא רואה את ההתקדמות שלך אלא אם הפעלת שיתוף בקבוצה."
     : "הסימונים נשמרים אוטומטית במכשיר הזה (בדפדפן). כדי לגבות או להעביר: הגדרות ← ייצוא גיבוי. ניקוי נתוני הדפדפן מוחק את הסימונים.";
@@ -701,6 +704,7 @@ if(doneCount()>0 && nextBook){
   var nb=document.querySelector('.book[data-name="'+nextBook+'"]'); if(nb) nb.classList.add("open");
 }
 scheduleReminder();
+var mg=$("mainGoogleBtn"); if(mg && CLOUD_MODE) mg.href=CFG.SUPABASE_URL+"/auth/v1/authorize?provider=google&redirect_to="+encodeURIComponent(location.origin+location.pathname);
 if("serviceWorker" in navigator && location.protocol==="https:"){
   navigator.serviceWorker.register("sw.js").catch(noop);
 }
