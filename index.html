@@ -22,6 +22,11 @@
 
 <!-- ============ TRACKER VIEW ============ -->
 <section id="view-track" class="view">
+  <div class="card" id="loginBanner" hidden>
+    <h2>התחברות</h2>
+    <p>התחברות עם Google מסנכרנת את הסימונים לחשבון שלך, כך שהם עוברים איתך בין מכשירים ומאפשרים הצטרפות לקבוצה.</p>
+    <div class="row"><a class="btn-volt" id="mainGoogleBtn" style="display:inline-block;text-align:center;text-decoration:none">התחברות עם Google</a></div>
+  </div>
   <div class="summary">
     <div class="ring">
       <svg width="110" height="110">
@@ -53,6 +58,7 @@
   <div class="next" id="nextWrap" style="display:none">
     <div>הבא בתור: <span id="nextName"></span><small>בסדר הספרים, בלי לחץ של לוח זמנים</small></div>
     <a id="next929" class="btn-volt" target="_blank" rel="noopener">פתח ב־929</a>
+    <a id="nextGolan" class="btn-ghost" target="_blank" rel="noopener" style="display:none">שיעור בישיבת הגולן</a>
   </div>
 
   <main id="books"></main>
@@ -80,6 +86,7 @@
 <input type="file" id="imp" accept="application/json" style="display:none">
 
 <script src="config.js"></script>
-<script src="app.js?v=simple1"></script>
+<script src="ygolan.js"></script>
+<script src="app.js?v=yg1"></script>
 </body>
 </html>
