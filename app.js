@@ -109,7 +109,7 @@ SECTIONS.forEach(function(sec){
         var cell=document.createElement("button"); cell.className="cell"; cell.dataset.ch=c;
         cell.textContent=heb(c);
         cell.setAttribute("aria-label",name+" פרק "+heb(c));
-        cell.onclick=function(){ toggleChapter(name,c); };
+        cell.onclick=function(){ openChapter(name,c); };
         grid.appendChild(cell);
       })(c);
     }
@@ -119,7 +119,32 @@ SECTIONS.forEach(function(sec){
 
 
 /* General site links, private to this device/account. Older chapter links remain stored untouched. */
-function closeChapter(){}
+
+/* Chapter dialog: links to 929 and Yeshivat HaGolan (when verified) + explicit mark/unmark. */
+var dlgChapter=null;
+function openChapter(name,c){
+  dlgChapter=[name,c];
+  var done = !!(state[name] && state[name][c]);
+  $("chTitle").textContent = name+" פרק "+heb(c);
+  $("chState").textContent = done ? "נלמד ✓" : "לא נלמד";
+  $("ch929").href = "https://www.929.org.il/page/"+SEQ[name+"|"+c];
+  var g=(window.YGOLAN||{})[name+"|"+c], gn=$("chGolan");
+  if(g){ gn.href=g; gn.style.display="block"; } else { gn.removeAttribute("href"); gn.style.display="none"; }
+  $("chDone").textContent = done ? "בטל סימון" : "סמן כנלמד";
+  var d=$("chapterDlg"); if(!d.open) d.showModal();
+}
+function closeChapter(){ var d=$("chapterDlg"); if(d&&d.open) d.close(); }
+$("chClose").onclick=closeChapter;
+$("chapterDlg").addEventListener("click",function(e){ if(e.target===this) closeChapter(); });
+$("chDone").onclick=function(){
+  if(!dlgChapter) return;
+  var name=dlgChapter[0], c=dlgChapter[1];
+  toggleChapter(name,c);
+  var done = !!(state[name] && state[name][c]);
+  $("chState").textContent = done ? "נלמד ✓" : "לא נלמד";
+  $("chDone").textContent = done ? "בטל סימון" : "סמן כנלמד";
+};
+
 function siteLinksKey(){return activeKey()+"|site-resources";}
 function validSiteUrl(v){try{var u=new URL(v);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:null;}catch(e){return null;}}
 function renderSites(){
