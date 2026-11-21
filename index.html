@@ -61,7 +61,15 @@
     <a id="nextGolan" class="btn-ghost" target="_blank" rel="noopener" style="display:none">שיעור בישיבת הגולן</a>
   </div>
 
-  <main id="books"></main>
+  <main id="books">
+  <dialog id="chapterDlg" class="chapter-dialog">
+    <div class="chapter-top"><span id="chState"></span><button id="chClose" aria-label="סגירה">×</button></div>
+    <h2 id="chTitle"></h2>
+    <a id="ch929" class="chapter-source btn-volt" target="_blank" rel="noopener">פתח ב־929</a>
+    <a id="chGolan" class="chapter-source btn-ghost" target="_blank" rel="noopener" style="display:none">שיעור בישיבת הגולן</a>
+    <button id="chDone" class="btn-volt" style="width:100%;margin-top:14px;min-height:48px"></button>
+  </dialog>
+</main>
 
   <div class="note" id="storageNote"></div>
 </section>
@@ -87,6 +95,6 @@
 
 <script src="config.js"></script>
 <script src="ygolan.js"></script>
-<script src="app.js?v=yg1"></script>
+<script src="app.js?v=yg2"></script>
 </body>
 </html>
