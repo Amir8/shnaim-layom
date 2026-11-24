@@ -1,7 +1,7 @@
 :root{
   --bg:#0b0b0d; --card:#151517; --card2:#1c1c1f; --line:#26262a;
   --txt:#f5f5f6; --mut:#9a9aa2; --volt:#d8ff3d; --volt-dim:rgba(216,255,61,.14);
-  --danger:#ff6b6b;
+  --danger:#ff6b6b; --sky:#4da3ff;
   --radius:18px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -73,6 +73,11 @@ h1{font-size:30px;font-weight:800;margin:0;letter-spacing:-.5px}
   background:var(--volt); color:#111; border:0; border-radius:12px; padding:10px 16px;
   font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; text-decoration:none;
   white-space:nowrap; display:inline-block;
+}
+.btn-sky{
+  background:var(--sky); color:#0b1526; border:0; border-radius:12px; padding:10px 16px;
+  font-size:14px; font-weight:800; cursor:pointer; font-family:inherit; text-decoration:none;
+  white-space:nowrap; display:inline-block; width:100%;
 }
 .btn-ghost{
   background:var(--card2); color:var(--txt); border:1px solid var(--line); border-radius:12px;
